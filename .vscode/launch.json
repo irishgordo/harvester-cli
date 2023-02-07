@@ -12,7 +12,7 @@
       "mode": "debug",
       "program": "main.go",
 
-      "args": ["image", "create", "--source","/home/mohamed/Downloads/kinetic-server-cloudimg-amd64.img","test-upload-from-cli"]
+      "args": ["image", "create", "--source","/tmp/ec2-to-harvester/generictest_export-i-008bac7f11c5e0b9e.vmdk.img","test-upload-from-cli"]
     },
     {
       "name": "catalog",

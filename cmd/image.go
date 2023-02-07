@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io"
 	"io/fs"
@@ -234,20 +233,21 @@ func imageCreate(ctx *cli.Context) (err error) {
 			if err != nil {
 				return err
 			}
-			pemBlock, _ := pem.Decode([]byte(rancherServerConfig.CACerts))
-			var ownCert *x509.Certificate
-			ownCert, err = x509.ParseCertificate(pemBlock.Bytes)
-			if err != nil {
-				return fmt.Errorf("invalid CA certification in Rancher configuration, %w", err)
-			}
+			// pemBlock, _ := pem.Decode([]byte(rancherServerConfig.CACerts))
+			// var ownCert *x509.Certificate
+			// ownCert, err = x509.ParseCertificate(pemBlock.Bytes)
+			// if err != nil {
+			// 	return fmt.Errorf("invalid CA certification in Rancher configuration, %w", err)
+			// }
 
-			rootCAs.AddCert(ownCert)
+			//rootCAs.AddCert(ownCert)
 
 			req.Header.Add("Authorization", "Bearer "+rancherServerConfig.TokenKey)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
 			tr := &http.Transport{
 				TLSClientConfig: &tls.Config{
-					RootCAs: rootCAs,
+					RootCAs:            rootCAs,
+					InsecureSkipVerify: true,
 				},
 			}
 			httpClient := &http.Client{Transport: tr}
@@ -325,13 +325,13 @@ func getHarvesterAPIFromConfig(ctx *cli.Context) (serverConfig *config.ServerCon
 	}
 
 	harvesterKubeAPIServerURL = restConfig.Host
-	u, err := url.Parse(harvesterKubeAPIServerURL)
+	//_, err := url.Parse(harvesterKubeAPIServerURL)
 
-	if err != nil {
-		return
-	}
+	// if err != nil {
+	// 	return
+	// }
 
-	harvesterKubeAPIServerHost := u.Host
+	//harvesterKubeAPIServerHost := u.Host
 
 	tokenMap, configMap, err := GetRancherTokenMap(ctx)
 
@@ -340,9 +340,8 @@ func getHarvesterAPIFromConfig(ctx *cli.Context) (serverConfig *config.ServerCon
 	}
 
 	var ok bool = false
-
-	if _, ok = tokenMap[harvesterKubeAPIServerHost]; ok {
-		serverConfig = configMap[harvesterKubeAPIServerHost]
+	if _, ok = tokenMap["localhost:4443"]; ok {
+		serverConfig = configMap["localhost:4443"]
 		return
 	} else {
 		return nil, "", fmt.Errorf("not able to determine harvester API URL")
